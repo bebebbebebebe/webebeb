@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+ШАГ 3: Подключение шаблона (render)
+Теперь научим нашего "Повара" ( views.py ) не отдавать сырую строку, а использовать заготовленную
+"Тарелку" (шаблон).
+Откройте gallery/views.py .
+Проверка:
+1. Убедитесь, что сервер запущен ( python manage.py runserver ).
+<title>3D Storage</title>
+</head>
+<body>
+<header>
+<!-- {{ ... }} — это переменная. Мы передадим её из Python -->
+<h1>{{ page_title }}</h1>
+</header>
+<main>
+    <h2>Доступные ассеты:</h2>
+    <!-- Цикл for в шаблоне Django -->
+    <ul>
+        {% for asset in assets %}
+            <li>
+                <strong>{{ asset.name }}</strong>
+                <small>(Размер: {{ asset.file_size }})</small>
+                <!-- Ссылка-заглушка -->
+                <a href="#">[Скачать]</a>
+            </li>
+        {% empty %}
+            <!-- Этот блок сработает, если список assets пустой -->
+            <li>Нет доступных моделей.</li>
+        {% endfor %}
+    </ul>
+</main>
+<footer>
+<p>&copy; 2024 Web Structures Course</p>
+</footer>
+</body>
+</html>
