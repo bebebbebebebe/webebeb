@@ -2,12 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-ШАГ 3: Подключение шаблона (render)
-Теперь научим нашего "Повара" ( views.py ) не отдавать сырую строку, а использовать заготовленную
-"Тарелку" (шаблон).
-Откройте gallery/views.py .
-Проверка:
-1. Убедитесь, что сервер запущен ( python manage.py runserver ).
+
 <title>3D Storage</title>
 </head>
 <body>
@@ -16,21 +11,30 @@
 <h1>{{ page_title }}</h1>
 </header>
 <main>
+    <nav>
+        <a href="/">Главная</a> | 
+        <a href="/about/">О нас</a> | 
+        <a href="/upload/">Загрузить кота</a>
+    </nav>
     <h2>Доступные ассеты:</h2>
     <!-- Цикл for в шаблоне Django -->
     <ul>
         {% for asset in assets %}
             <li>
-                <strong>{{ asset.name }}</strong>
-                <small>(Размер: {{ asset.file_size }})</small>
-                <!-- Ссылка-заглушка -->
-                <a href="#">[Скачать]</a>
+                <strong>{{ asset.title }}</strong>
+                <!-- asset.file.url — это ссылка на файл (/media/3d_assets/...) -->
+                <!-- asset.file.size — размер в байтах. filter 'filesizeformat' делает его читаемым
+                (MB/KB) -->
+                <small>(Размер: {{ asset.file.size|filesizeformat }})</small>
+                <a href="{{ asset.file.url }}" download>[Скачать файл]</a>
             </li>
         {% empty %}
             <!-- Этот блок сработает, если список assets пустой -->
             <li>Нет доступных моделей.</li>
         {% endfor %}
     </ul>
+    <!-- Ссылка "О нас" -->
+    <a href="/about/">О нас</a>
 </main>
 <footer>
 <p>&copy; 2024 Web Structures Course</p>
