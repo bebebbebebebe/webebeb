@@ -1,6 +1,8 @@
 // gallery/static/gallery/js/viewer.js
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 export function loadModel(containerId, modelUrl) {
     const container = document.getElementById(containerId);
@@ -11,7 +13,7 @@ export function loadModel(containerId, modelUrl) {
 
     // --- СЦЕНА ---
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf5f5f5);
+    scene.background = null;
 
     // --- КАМЕРА ---
     const camera = new THREE.PerspectiveCamera(
@@ -28,13 +30,33 @@ export function loadModel(containerId, modelUrl) {
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
+    // --- ДОБАВЛЯЕМ УПРАВЛЕНИЕ ---
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.minDistance = 0.1;
+    controls.maxDistance = 50;
+
     // --- СВЕТ ---
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     scene.add(ambientLight);
     
-    const dirLight = new THREE.DirectionalLight(0xffffff, 2);
-    dirLight.position.set(5, 10, 7);
-    scene.add(dirLight);
+    //const dirLight = new THREE.DirectionalLight(0xffffff, 2);
+    //dirLight.position.set(5, 10, 7);
+    //scene.add(dirLight);
+
+    // --- НОВЫЙ PRO СВЕТ ---
+    // PMREMGenerator генерирует карту окружения из сцены
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    pmremGenerator.compileEquirectangularShader();
+    // Создаем нейтральную "комнату"
+    const roomEnvironment = new RoomEnvironment();
+    // Говорим сцене: "Используй эту комнату как источник света и отражений"
+    scene.environment = pmremGenerator.fromScene(roomEnvironment).texture;
+    // Опционально: Можно сделать фон прозрачным или цветным
+    // scene.background = new THREE.Color(0xeeeeee);
+    // Если хотите прозрачность, уберите scene.background и добавьте alpha: true в рендерер
+
 
     // --- ПЕРЕМЕННАЯ ДЛЯ МОДЕЛИ ---
     let loadedModel = null;
@@ -46,7 +68,7 @@ export function loadModel(containerId, modelUrl) {
         modelUrl,
         (gltf) => {
             const model = gltf.scene;
-            loadedModel = model; // Сохраняем ссылку для анимации
+            loadedModel = model;
             
             // Центрирование и подгон камеры
             fitCameraToObject(camera, model, 1.5);
@@ -61,14 +83,11 @@ export function loadModel(containerId, modelUrl) {
         }
     );
 
-    // --- АНИМАЦИЯ С ВРАЩЕНИЕМ ---
+    // --- АНИМАЦИЯ ---
     function animate() {
         requestAnimationFrame(animate);
         
-        // Если модель загрузилась - вращаем её
-        if (loadedModel) {
-            loadedModel.rotation.y += 0.005; // Медленное вращение
-        }
+        controls.update(); // Обновляем контроллер
         
         renderer.render(scene, camera);
     }
@@ -84,28 +103,22 @@ export function loadModel(containerId, modelUrl) {
 
 // --- ФУНКЦИЯ ЦЕНТРИРОВАНИЯ КАМЕРЫ ---
 function fitCameraToObject(camera, object, offset = 1.25) {
-    // 1. Вычисляем Bounding Box
     const boundingBox = new THREE.Box3();
     boundingBox.setFromObject(object);
 
-    // 2. Находим центр и размер
     const center = boundingBox.getCenter(new THREE.Vector3());
     const size = boundingBox.getSize(new THREE.Vector3());
 
-    // 3. Самая длинная сторона модели
     const maxDim = Math.max(size.x, size.y, size.z);
 
-    // 4. Смещаем модель в центр
     object.position.x = -center.x;
     object.position.y = -center.y;
     object.position.z = -center.z;
 
-    // 5. Отодвигаем камеру
     const fov = camera.fov * (Math.PI / 180);
     let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
     cameraZ *= offset;
 
-    // Устанавливаем камеру
     camera.position.set(0, maxDim * 0.5, cameraZ);
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
