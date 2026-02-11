@@ -1,63 +1,112 @@
 // gallery/static/gallery/js/viewer.js
-// 1. Импортируем Three.js по имени из Import Map
 import * as THREE from 'three';
-// 2. Экспортируем главную функцию
-// Она принимает ID HTML-элемента, в который нужно вставить 3D
-export function mountSimpleCube(containerId) {
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-    window.addEventListener('resize', () => {
-    // Обновляем параметры камеры
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
-        // Обновляем размер холста
-        renderer.setSize(container.clientWidth, container.clientHeight);
-    });
-
+export function loadModel(containerId, modelUrl) {
     const container = document.getElementById(containerId);
     if (!container) {
         console.error("Контейнер не найден:", containerId);
         return;
     }
-    // --- А. СЦЕНА ---
+
+    // --- СЦЕНА ---
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f0f0); // Светло-серый фон
-    // --- Б. КАМЕРА ---
-    // Угол обзора 75, пропорции как у контейнера, видеть от 0.1 до 1000 метров
+    scene.background = new THREE.Color(0xf5f5f5);
+
+    // --- КАМЕРА ---
     const camera = new THREE.PerspectiveCamera(
-        75,
+        45,
         container.clientWidth / container.clientHeight,
         0.1,
         1000
     );
-    camera.position.z = 2; // Отодвигаем камеру чуть назад
-    // --- В. РЕНДЕРЕР (Художник) ---
-    const renderer = new THREE.WebGLRenderer({ antialias: true }); // antialias -сглаживание
+    camera.position.z = 3;
+
+    // --- РЕНДЕРЕР ---
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
-    // Вставляем "холст" (canvas) внутрь нашего div
-    container.innerHTML = ''; // Очищаем текст "Wait..."
+    container.innerHTML = '';
     container.appendChild(renderer.domElement);
-    // --- Г. ОБЪЕКТ (Куб) ---
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshStandardMaterial({ color: 0x007bff }); // Синий
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
-    // --- Д. СВЕТ ---
-    const light = new THREE.DirectionalLight(0xffffff, 2); // Белый мощный свет
-    light.position.set(5, 5, 5);
-    scene.add(light);
-    // Добавим еще мягкий свет, чтобы тени не были черными
-    const ambientLight = new THREE.AmbientLight(0x404040);
+
+    // --- СВЕТ ---
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     scene.add(ambientLight);
-    // --- Е. АНИМАЦИЯ (Loop) ---
+    
+    const dirLight = new THREE.DirectionalLight(0xffffff, 2);
+    dirLight.position.set(5, 10, 7);
+    scene.add(dirLight);
+
+    // --- ПЕРЕМЕННАЯ ДЛЯ МОДЕЛИ ---
+    let loadedModel = null;
+
+    // --- ЗАГРУЗКА МОДЕЛИ ---
+    const loader = new GLTFLoader();
+    
+    loader.load(
+        modelUrl,
+        (gltf) => {
+            const model = gltf.scene;
+            loadedModel = model; // Сохраняем ссылку для анимации
+            
+            // Центрирование и подгон камеры
+            fitCameraToObject(camera, model, 1.5);
+            
+            scene.add(model);
+            console.log("✓ Модель загружена в", containerId);
+        },
+        undefined,
+        (error) => {
+            console.error('❌ Ошибка загрузки:', error);
+            container.innerHTML = '❌ Ошибка загрузки';
+        }
+    );
+
+    // --- АНИМАЦИЯ С ВРАЩЕНИЕМ ---
     function animate() {
-        requestAnimationFrame(animate); // Запрашиваем следующий кадр
-        // Вращаем куб
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
-        // Рисуем кадр
+        requestAnimationFrame(animate);
+        
+        // Если модель загрузилась - вращаем её
+        if (loadedModel) {
+            loadedModel.rotation.y += 0.005; // Медленное вращение
+        }
+        
         renderer.render(scene, camera);
     }
-    // Запуск
     animate();
-    console.log("3D сцена запущена в", containerId);
+
+    // --- RESIZE ---
+    window.addEventListener('resize', () => {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+}
+
+// --- ФУНКЦИЯ ЦЕНТРИРОВАНИЯ КАМЕРЫ ---
+function fitCameraToObject(camera, object, offset = 1.25) {
+    // 1. Вычисляем Bounding Box
+    const boundingBox = new THREE.Box3();
+    boundingBox.setFromObject(object);
+
+    // 2. Находим центр и размер
+    const center = boundingBox.getCenter(new THREE.Vector3());
+    const size = boundingBox.getSize(new THREE.Vector3());
+
+    // 3. Самая длинная сторона модели
+    const maxDim = Math.max(size.x, size.y, size.z);
+
+    // 4. Смещаем модель в центр
+    object.position.x = -center.x;
+    object.position.y = -center.y;
+    object.position.z = -center.z;
+
+    // 5. Отодвигаем камеру
+    const fov = camera.fov * (Math.PI / 180);
+    let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+    cameraZ *= offset;
+
+    // Устанавливаем камеру
+    camera.position.set(0, maxDim * 0.5, cameraZ);
+    camera.lookAt(0, 0, 0);
+    camera.updateProjectionMatrix();
 }
