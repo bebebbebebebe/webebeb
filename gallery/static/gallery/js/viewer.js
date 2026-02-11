@@ -7,6 +7,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 export function loadModel(containerId, modelUrl) {
     const container = document.getElementById(containerId);
     if (!container) {
+        
         console.error("Контейнер не найден:", containerId);
         return;
     }
@@ -27,10 +28,15 @@ export function loadModel(containerId, modelUrl) {
     // --- РЕНДЕРЕР ---
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
-    // --- ДОБАВЛЯЕМ УПРАВЛЕНИЕ ---
+    // --- УПРАВЛЕНИЕ ---
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
@@ -41,25 +47,26 @@ export function loadModel(containerId, modelUrl) {
     const ambientLight = new THREE.AmbientLight(0xffffff, 1);
     scene.add(ambientLight);
     
-    //const dirLight = new THREE.DirectionalLight(0xffffff, 2);
-    //dirLight.position.set(5, 10, 7);
-    //scene.add(dirLight);
-
-    // --- НОВЫЙ PRO СВЕТ ---
-    // PMREMGenerator генерирует карту окружения из сцены
+    // --- PRO СВЕТ (ОКРУЖЕНИЕ) ---
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     pmremGenerator.compileEquirectangularShader();
-    // Создаем нейтральную "комнату"
     const roomEnvironment = new RoomEnvironment();
-    // Говорим сцене: "Используй эту комнату как источник света и отражений"
     scene.environment = pmremGenerator.fromScene(roomEnvironment).texture;
-    // Опционально: Можно сделать фон прозрачным или цветным
-    // scene.background = new THREE.Color(0xeeeeee);
-    // Если хотите прозрачность, уберите scene.background и добавьте alpha: true в рендерер
-
 
     // --- ПЕРЕМЕННАЯ ДЛЯ МОДЕЛИ ---
     let loadedModel = null;
+
+    // --- СОЗДАЕМ ЛОАДЕР ---
+    const loaderDiv = document.createElement('div');
+    loaderDiv.className = 'loader-overlay';
+    loaderDiv.innerHTML = `
+        <div style="color: #666; font-size: 0.9rem;">Loading...</div>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+    `;
+    container.appendChild(loaderDiv);
+    const progressFill = loaderDiv.querySelector('.progress-fill');
 
     // --- ЗАГРУЗКА МОДЕЛИ ---
     const loader = new GLTFLoader();
@@ -70,25 +77,33 @@ export function loadModel(containerId, modelUrl) {
             const model = gltf.scene;
             loadedModel = model;
             
-            // Центрирование и подгон камеры
             fitCameraToObject(camera, model, 1.5);
-            
             scene.add(model);
+            
+            // Скрываем лоадер
+            loaderDiv.style.opacity = '0';
+            setTimeout(() => {
+                loaderDiv.remove();
+            }, 300);
+            
             console.log("✓ Модель загружена в", containerId);
         },
-        undefined,
+        (xhr) => {
+            if (xhr.total > 0) {
+                const percent = (xhr.loaded / xhr.total) * 100;
+                progressFill.style.width = percent + '%';
+            }
+        },
         (error) => {
             console.error('❌ Ошибка загрузки:', error);
-            container.innerHTML = '❌ Ошибка загрузки';
+            loaderDiv.innerHTML = `<div style="color: #721c24; background: #f8d7da; padding: 10px; border-radius: 4px;">❌ Ошибка загрузки<br><small>Проверьте файл</small></div>`;
         }
     );
 
     // --- АНИМАЦИЯ ---
     function animate() {
         requestAnimationFrame(animate);
-        
-        controls.update(); // Обновляем контроллер
-        
+        controls.update();
         renderer.render(scene, camera);
     }
     animate();
@@ -123,3 +138,4 @@ function fitCameraToObject(camera, object, offset = 1.25) {
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
 }
+
