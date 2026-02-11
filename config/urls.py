@@ -12,8 +12,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # Пустая строка '' означает главную страницу сайта (http://localhost:8000/)
     path('', home, name='home'),
-    path('about/', about, name='home'),
-    path('upload/', upload, name='home')
+    path('about/', about, name='about'),
+    path('upload/', upload, name='upload')
 
 ]
 

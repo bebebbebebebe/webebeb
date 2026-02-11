@@ -1,0 +1,16 @@
+Посмотреть все коммиты: git log --oneline
+
+Переключиться на конкретную версию: git checkout a1b2c3d
+
+Вернуться обратно: git checkout main
+
+Добавляете изменения:
+    git add .
+    git commit -m "4 LABA обновление"
+    git push origin main
+
+
+
+
+venv\Scripts\activate
+python manage.py runserver

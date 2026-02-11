@@ -6,6 +6,31 @@
 <title>3D Storage</title>
 </head>
 <body>
+
+<!-- СООБЩЕНИЯ СНИЗУ СТРАНИЦЫ -->
+{% if messages %}
+    {% for message in messages %}
+        <div id="success-message" style="position: fixed; bottom: 20px; right: 20px; background: #d4edda; color: #155724; padding: 15px 25px; margin: 10px; border-radius: 8px; border: 1px solid #c3e6cb; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 16px; z-index: 1000;">
+            {{ message }}
+        </div>
+    {% endfor %}
+    
+    <script>
+        // Сообщение исчезнет через 3 секунды
+        setTimeout(function() {
+            var message = document.getElementById('success-message');
+            if (message) {
+                message.style.transition = 'opacity 0.5s';
+                message.style.opacity = '0';
+                setTimeout(function() {
+                    message.style.display = 'none';
+                }, 500);
+            }
+        }, 3000);
+    </script>
+{% endif %}
+
+
 <header>
 <!-- {{ ... }} — это переменная. Мы передадим её из Python -->
 <h1>{{ page_title }}</h1>

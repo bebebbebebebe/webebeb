@@ -1,5 +1,5 @@
-<title>Кот загрузчик</title>
-<h1>Загрузка кота</h1>
+<title>Загрузи кота</title>
+
 </header>
 <main>
     <nav>
@@ -9,9 +9,35 @@
     </nav>
     
 </main>
-<form>
-    <input type="text" placeholder="Название">
-    <input type="file">
-    <button>Загрузить</button>
-</form>
-<a href="/">Назад</a>
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Загрузка кота</title>
+    <!-- Простой CSS для наглядности (пока без внешних файлов) -->
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        button { padding: 10px 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Загрузить кота</h1>
+    <!--
+    1. method="post": Чтобы отправить данные.
+    2. enctype="multipart/form-data": ОБЯЗАТЕЛЬНО для файлов!
+    -->
+    <form method="post" enctype="multipart/form-data">
+        <!-- Защита от хакеров -->
+        {% csrf_token %}
+        <!-- Django сам нарисует label и input для всех полей -->
+        <div class="form-group">
+        {{ form.as_p }}
+        </div>
+        <button type="submit">Загрузить в базу</button>
+    </form>
+    <br>
+    <a href="{% url 'home' %}">← Назад в галерею</a>
+</body>
+</html>
