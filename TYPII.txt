@@ -6,7 +6,7 @@
 
 Добавляете изменения:
     git add .
-    git commit -m "4 LABA обновление"
+    git commit -m ""
     git push origin main
 
 

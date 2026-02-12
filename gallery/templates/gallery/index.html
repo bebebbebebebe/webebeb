@@ -17,6 +17,30 @@
     <!-- Подключение CSS (оставьте как было) -->
     {% load static %}
     <link rel="stylesheet" href="{% static 'gallery/style.css' %}">
+    <style>
+        .play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 123, 255, 0.6);
+            border-radius: 50%;
+            border: 2px solid white;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, background 0.2s;
+            z-index: 5;
+        }
+        .card-preview:hover .play-btn {
+            background: rgba(0, 123, 255, 0.8);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+    </style>
 </head>
 
 <body>
@@ -62,9 +86,18 @@
         <!-- Карточка -->
             <div class="asset-card">
             <!-- 1. Превью (Верхняя часть) -->
-            <!-- Пока здесь просто серый квадрат с иконкой куба -->
-            <!-- На 6-й неделе здесь будет картинка, на 5-й - 3D сцена -->
-                <div class="card-preview" id="model-container-{{ asset.id }}" data-url="{{ asset.file.url }}">
+                <div class="card-preview js-load-3d"
+                     id="model-container-{{ asset.id }}"
+                     data-url="{{ asset.file.url }}"
+                     {% if asset.image %}
+                     style="background-image: url('{{ asset.image.url }}');"
+                     {% endif %}
+                >
+                    {% if asset.image %}
+                        <div class="play-btn">▶</div>
+                    {% else %}
+                        <span style="font-size: 2rem;">🎲</span>
+                    {% endif %}
                 </div>
                 <!-- 2. Информация (Нижняя часть) -->
                 <div class="card-info">
@@ -98,16 +131,34 @@
 <!-- type="module" включает режим современных импортов -->
 <script type="module">
     import { loadModel } from "{% static 'gallery/js/viewer.js' %}";
-    // Находим все карточки с моделями
-    const containers = document.querySelectorAll('.card-preview');
-    // Пробегаемся по каждой
+    
+    // Находим все блоки, готовые к 3D
+    const containers = document.querySelectorAll('.js-load-3d');
+    
     containers.forEach(container => {
-        const id = container.id; // Например: "model-container-5"
-        const url = container.dataset.url; // Например: "/media/3d_assets/chair.glb"
-        // Если URL есть (файл существует) - запускаем viewer
-        if (url) {
-            loadModel(id, url);
-        }
+        // Вешаем слушатель клика на каждую карточку
+        container.addEventListener('click', function() {
+            // Проверка: Если внутри уже есть canvas, значит модель уже загружена
+            if (this.querySelector('canvas')) return;
+            
+            // 1. Убираем кнопку Play (очищаем контент)
+            // Но оставляем фон, пока не появится Canvas, чтобы не мигало белым
+            this.innerHTML = '';
+            
+            // 2. Добавляем спиннер (визуально для пользователя)
+            // (Тот самый лоадер, который мы делали на прошлой неделе, появится сам внутри loadModel)
+            
+            // 3. Запускаем загрузку 3D
+            const id = this.id;
+            const url = this.dataset.url;
+            
+            if (url) {
+                console.log("Загружаю 3D по требованию:", url);
+                loadModel(id, url);
+                // Убираем фоновую картинку, когда 3D загрузится?
+                // loadModel сам очистит innerHTML и перекроет фон канвасом.
+            }
+        });
     });
 </script>
 </body>
