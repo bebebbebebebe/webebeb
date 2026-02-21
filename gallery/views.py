@@ -6,6 +6,7 @@ from django.contrib import messages
 import base64
 from django.core.files.base import ContentFile # Обертка для сохранения файлов
 from django.utils import timezone
+from django.core.paginator import Paginator # 1. Импорт
 
 def home(request):
 # all() возвращает хаос.
@@ -34,9 +35,17 @@ def home(request):
     # По умолчанию (new) - свежие сверху
         assets = assets.order_by('-created_at')
     # 5. Отдаем результат
+
+    # Режем список по 8 штук на страницу (для теста, чтобы быстрее увидеть кнопки)
+    paginator = Paginator(assets, 8)
+    # Получаем номер страницы из URL (например, ?page=2)
+    page_number = request.GET.get('page')
+    # Получаем конкретный кусочек данных (объект Page)
+    page_obj = paginator.get_page(page_number)
+
     context_data = {
         'page_title': 'Главная Галерея',
-        'assets': assets,
+        'page_obj': page_obj,
     }
     
     return render(request, 'gallery/index.html', context_data)
@@ -77,6 +86,9 @@ def upload(request):
             
             # 3. Финальное сохранение в БД
             new_asset.save()
+
+            messages.success(request, f'Модель "{new_asset.title}" успешно загружена!')
+
             return redirect('home')
     else:
         form = AssetForm()
