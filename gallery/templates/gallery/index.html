@@ -9,7 +9,7 @@
     <script type="importmap">
     {
         "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js", 
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
             "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
         }
     }
@@ -48,118 +48,199 @@
     {% if messages %}
         <div class="messages-container">
             {% for message in messages %}
-            <!-- message.tags добавит класс 'success', 'error' или 'warning' -->
+                <!-- message.tags добавит класс 'success', 'error' или 'warning' -->
                 <div class="alert {{ message.tags }}">
                     {{ message }}
-                 </div>
+                </div>
             {% endfor %}
         </div>
     {% endif %}
 
+    <!-- Меню с подложкой из скруглённого прямоугольника (фиксированное при прокрутке) -->
+<div style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background: white;
+    padding: 15px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+">
+    <div style="
+        display: flex;
+        justify-content: center;
+        max-width: 1200px;
+        margin: 0 auto;
+    ">
+        <div style="
+            display: inline-block;
+            background: linear-gradient(135deg, #4682b4, #3a6a96);
+            padding: 15px 30px;
+            border-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            text-align: center;
+        ">
+            <nav style="margin: 0; display: flex; justify-content: center; gap: 20px; align-items: center;">
+                <a href="/" style="color: white; text-decoration: none; font-weight: 500;">Главная</a>
+                <span style="color: rgba(255,255,255,0.8);">|</span>
+                <a href="/about/" style="color: white; text-decoration: none; font-weight: 500;">О нас</a>
+                <span style="color: rgba(255,255,255,0.8);">|</span>
+                <a href="/upload/" style="color: white; text-decoration: none; font-weight: 500;">Загрузить кота</a>
+            </nav>
+        </div>
+    </div>
+</div>
+<!-- Заполнитель для фиксированного меню -->
+<div style="height: 70px;"></div>
 
 
-<nav>
-    <a href="/">Главная</a> | 
-    <a href="/about/">О нас</a> | 
-    <a href="/upload/">Загрузить кота</a>
-</nav>
-<header>
-    
-<!-- {{ ... }} — это переменная. Мы передадим её из Python -->
+
+    <header style="margin-top: 140px;">
     <h1>{{ page_title }}</h1>
-    <a href="{% url 'upload' %}" class="btn" style="background-color: #28a745;">+ Загрузить модель</a>
-
+    
+<a href="{% url 'upload' %}" class="btn" style="
+    display: inline-block;
+    background: linear-gradient(135deg, #4682b4, #3a6a96);
+    color: white;
+    text-decoration: none;
+    width: 200px;  /* Ширина кнопки */
+    height: 50px; /* Высота кнопки */
+    line-height: 50px; /* Центрирует текст по вертикали */
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    border-radius: 100px;
+    font-weight: 500;
+    font-size: 18px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+">+ Загрузить модель</a>
 </header>
 
-<!-- Блок поиска и фильтров -->
-<div class="toolbar">
-
-    
-    <p style="margin-top: 10px; text-align: center; width: 100%;">
-        <a href="?days=1">📅 Только за сегодня</a>
-        {% if request.GET.days == '1' %}
-            | <a href="?">Все записи</a>
-        {% endif %}
-    </p>
+<style>
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+</style>
 
 
-    <form action="{% url 'home' %}" method="get" style="display: flex; width: 100%; gap: 10px; align-items: center;">
-    
-    <!-- 1. Поле поиска -->
-    <!-- value="{{ request.GET.q }}" - это Sticky UI. Мы оставляем текст в поле после перезагрузки страницы -->
-        <input type="text" name="q" class="search-input"
-            placeholder="Найти 3D модель..."
-            value="{{ request.GET.q|default:'' }}">
-    <!-- 2. Сортировка -->
-    <!-- onchange="this.form.submit()" заставляет форму отправиться сразу при выборе из списка -->
-        <select name="ordering" class="sort-select" onchange="this.form.submit()">
-            <option value="new" {% if request.GET.ordering == 'new' %}selected{% endif %}>Сначала новые</option>
-            <option value="old" {% if request.GET.ordering == 'old' %}selected{% endif %}>Сначала старые</option>
-            <option value="name" {% if request.GET.ordering == 'name' %}selected{% endif %}>По имени (А-Я)</option>
-        </select>
-    <!-- 3. Кнопка -->
-        <button type="submit" class="search-btn">Найти</button>
-    <!-- 4. Кнопка сброса (если поиск активен) -->
-        {% if request.GET.q or request.GET.ordering %}
-            <a href="{% url 'home' %}" class="reset-link">✖ Сбросить</a>
-        {% endif %}
-    </form>
-    
-</div>
+    <!-- Блок поиска и фильтров -->
+    <div class="toolbar">
+        <p style="margin-top: 10px; text-align: center; width: 100%;">
+            <a href="?days=1">📅 Только за сегодня</a>
+            {% if request.GET.days == '1' %}
+                | <a href="?">Все записи</a>
+            {% endif %}
+        </p>
 
+        <form action="{% url 'home' %}" method="get" style="display: flex; width: 100%; gap: 10px; align-items: center;">
+            <!-- 1. Поле поиска -->
+            <!-- value="{{ request.GET.q }}" - это Sticky UI. Мы оставляем текст в поле после перезагрузки страницы -->
+            <input type="text" name="q" class="search-input"
+                placeholder="Найти 3D модель..."
+                value="{{ request.GET.q|default:'' }}">
+            <!-- 2. Сортировка -->
+            <!-- onchange="this.form.submit()" заставляет форму отправиться сразу при выборе из списка -->
+            <select name="ordering" class="sort-select" onchange="this.form.submit()">
+                <option value="new" {% if request.GET.ordering == 'new' %}selected{% endif %}>Сначала новые</option>
+                <option value="old" {% if request.GET.ordering == 'old' %}selected{% endif %}>Сначала старые</option>
+                <option value="name" {% if request.GET.ordering == 'name' %}selected{% endif %}>По имени (А-Я)</option>
+            </select>
+            <!-- 3. Кнопка -->
+            <button type="submit" class="btn search-btn" style="
+    display: inline-block;
+    background: linear-gradient(135deg, #4682b4, #3a6a96);
+    color: white;
+    text-decoration: none;
+    width: 130px;  /* Ширина кнопки */
+    height: 50px; /* Высота кнопки */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 100px;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+">Найти</button>
 
-<main>
-    {% load gallery_extras %}
-    <div class="gallery-grid">
-        {% for asset in page_obj %}
-        <!-- Карточка -->
-            <div class="asset-card">
-            <!-- 1. Превью (Верхняя часть) -->
-                <div class="card-preview js-load-3d"
-                     id="model-container-{{ asset.id }}"
-                     data-url="{{ asset.file.url }}"
-                     {% if asset.image %}
-                     style="background-image: url('{{ asset.image.url }}');"
-                     {% endif %}
-                >
-                    {% if asset.image %}
-                        <div class="play-btn">▶</div>
-                    {% else %}
-                        <span style="font-size: 2rem;">🎲</span>
-                    {% endif %}
-                </div>
-                <!-- 2. Информация (Нижняя часть) -->
-                <div class="card-info">
-                    <h3 class="card-title">{{ asset.title }}</h3>
-                    <div class="card-meta">
-                        <span>📅 {{ asset.created_at|date:"d M Y" }}</span>
-                        <!-- Если есть файл, показываем размер -->
-                        {% if asset.file %}
-                            <span style="float: right;">💾 {{asset.file.size|filesizeformat }}</span>
-                        {% endif %}
-                    </div>
-                    <!-- Кнопка скачивания -->
-                    {% if asset.file %}
-                        <a href="{{ asset.file.url }}" class="btn" download>Скачать .glb</a>
-                    {% else %}
-                        <span style="color: red;">Файл потерян</span>
-                    {% endif %}
-                </div>
-            </div>
-        {% empty %}
-            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                {% if request.GET.q %}
-                    <!-- Если был поиск -->
-                    <h3>По запросу "<b>{{ request.GET.q }}</b>" ничего не найдено 🕵️ •♂️</h3>
-                    <p>Попробуйте изменить запрос или <a href="{% url 'home' %}">сбросить фильтры</a>.</p>
+            <!-- 4. Кнопка сброса (если поиск активен) -->
+            {% if request.GET.q or request.GET.ordering %}
+                <a href="{% url 'home' %}" class="reset-link">✖ Сбросить</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <main>
+        {% load gallery_extras %}
+        <div class="gallery-grid">
+            {% for asset in page_obj %}
+                <!-- Карточка -->
+                <div class="asset-card">
+                    <!-- 1. Превью (Верхняя часть) -->
+                    <div class="card-preview js-load-3d"
+                id="model-container-{{ asset.id }}"
+                data-url="{{ asset.file.url }}"
+                {% if asset.image %}
+                style="background-image: url('{{ asset.image.url }}');"
+                {% endif %}
+            >
+                {% if asset.image %}
+                    <div class="play-btn">▶</div>
                 {% else %}
-                    <!-- Если база реально пуста -->
-                    <h3>База пуста</h3>
-                    <p>Загрузите первую модель!</p>
+                    <span style="font-size: 2rem;">🎲</span>
                 {% endif %}
             </div>
-        {% endfor %}
+            <!-- 2. Информация (Нижняя часть) -->
+            <div class="card-info">
+                <h3 class="card-title">{{ asset.title }}</h3>
+                <div class="card-meta">
+                    <span>📅 {{ asset.created_at|date:"d M Y" }}</span>
+                    <!-- Если есть файл, показываем размер -->
+            {% if asset.file %}
+                <span style="float: right;">💾 {{asset.file.size|filesizeformat }}</span>
+            {% endif %}
+        </div>
+        <!-- Кнопка скачивания -->
+        {% if asset.file %}
+            <a href="{{ asset.file.url }}" class="btn download-btn" download style="
+    display: inline-block;
+    background: linear-gradient(135deg, #4682b4, #3a6a96);
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    width: 110px;  /* Ширина кнопки */
+    height: 25px; /* Высота кнопки */
+    border-radius: 100px;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+">Скачать .glb</a>
+
+        {% else %}
+            <span style="color: red;">Файл потерян</span>
+        {% endif %}
     </div>
+</div>
+{% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+        {% if request.GET.q %}
+            <!-- Если был поиск -->
+            <h3>По запросу "<b>{{ request.GET.q }}</b>" ничего не найдено 🕵️ •♂️</h3>
+            <p>Попробуйте изменить запрос или <a href="{% url 'home' %}">сбросить фильтры</a>.</p>
+        {% else %}
+            <!-- Если база реально пуста -->
+            <h3>База пуста</h3>
+            <p>Загрузите первую модель!</p>
+        {% endif %}
+    </div>
+{% endfor %}
+</div>
 
     <!-- 3. Блок Пагинации -->
     <div class="pagination" style="text-align: center; margin: 20px 0;">

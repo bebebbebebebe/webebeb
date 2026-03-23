@@ -1,51 +1,55 @@
-/* Базовый сброс и шрифт */
+/* Базовый сброс и шрифт*/
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f5f5; /* Светло-серый фон */
+    background-color: #f8f9fa; /* Белый с лёгким серым оттенком */
     margin: 0;
     padding: 20px;
+    color: #333;
 }
+
 header {
     margin-bottom: 40px;
     text-align: center;
 }
+
 /* --- СЕТКА (GRID) --- */
 .gallery-grid {
     display: grid;
-    /* Это магическая строка адаптивности:
-    Создавай столько колонок, сколько влезет (auto-fill).
-    Минимальная ширина колонки 280px.
-    Если места много - растягивай их (1fr). */
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 30px; /* Расстояние между карточками */
+    gap: 25px; /* Немного уменьшили отступ между карточками */
     max-width: 1200px;
     margin: 0 auto;
 }
+
 /* --- КАРТОЧКА (CARD) --- */
 .asset-card {
     background: white;
-    border-radius: 12px;
-    overflow: hidden; /* Чтобы содержимое не вылезало за скругленные углы */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Легкая тень */
-    transition: transform 0.2s;
+    border-radius: 16px; /* Более скруглённые углы */
+    overflow: hidden;
+    box-shadow: 0 6px 12px rgba(128, 128, 128, 0.1); /* Лёгкая тень в серо-голубом оттенке */
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid #e9ecef; /* Светлая рамка */
 }
+
 .asset-card:hover {
-    transform: translateY(-5px); /* При наведении карточка чуть взлетает */
+    transform: translateY(-8px); /* Карточка взлетает чуть выше */
+    box-shadow: 0 10px 20px rgba(128, 128, 128, 0.15); /* Увеличенная тень при наведении */
 }
+
 /* Место для будущего 3D-вьювера или скриншота */
 .card-preview {
     height: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #888;
+    color: #6c757d; /* Серый цвет текста */
     font-size: 3rem;
-    /* Один background - градиент */
-    background: radial-gradient(circle at center, #ffffff, #d0d0d0);
+    background: linear-gradient(135deg, #e9ecef, #adb5bd); /* Градиент в светло-серых и серо-голубых тонах */
     position: relative;
     cursor: pointer;
     background-size: cover;
     background-position: center;
+    transition: background-color 0.3s;
 }
 
 /* Затемнение картинки при наведении */
@@ -53,19 +57,18 @@ header {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.1);
+    background: rgba(0, 0, 0, 0.08); /* Менее интенсивное затемнение */
 }
-
 
 /* Кнопка Play */
 .play-btn {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* Точная центровка */
-    width: 60px;
-    height: 60px;
-    background: rgba(0, 0, 0, 0.6);
+    transform: translate(-50%, -50%);
+    width: 65px;
+    height: 65px;
+    background: rgba(70, 130, 180, 0.8); /* Серо-голубой цвет */
     border-radius: 50%;
     border: 2px solid white;
     color: white;
@@ -73,44 +76,45 @@ header {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s, background 0.2s;
-    z-index: 5; /* Чтобы была поверх картинки */
+    transition: transform 0.3s, background 0.3s;
+    z-index: 5;
 }
+
 /* Эффект нажатия */
 .card-preview:hover .play-btn {
-    background: rgba(0, 123, 255, 0.8); /* Синий при наведении */
-    transform: translate(-50%, -50%) scale(1.1);
+    background: rgba(47, 79, 79, 0.9); /* Тёмно-серо-голубой при наведении */
+    transform: translate(-50%, -50%) scale(1.15);
 }
 
 /* Сам экран загрузки (поверх 3D) */
 .loader-overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(255, 255, 255, 0.9); /* Полупрозрачный белый */
+    background: rgba(255, 255, 255, 0.95);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 10;
-    transition: opacity 0.3s; /* Плавное исчезновение */
+    transition: opacity 0.4s;
 }
 
 /* Полоска прогресса (фон) */
 .progress-bar {
-    width: 60%;
-    height: 6px;
-    background: #e0e0e0;
-    border-radius: 3px;
+    width: 70%;
+    height: 8px;
+    background: #e9ecef; /* Светло-серый фон */
+    border-radius: 4px;
     overflow: hidden;
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 /* Полоска прогресса (заполнение) */
 .progress-fill {
-    width: 0%; /* Будем менять это через JS */
+    width: 0%;
     height: 100%;
-    background-color: #007bff; /* Синий цвет */
-    transition: width 0.1s;
+    background-color: #4682b4; /* Серо-голубой цвет заполнения */
+    transition: width 0.2s;
 }
 
 .error-msg {
@@ -120,124 +124,92 @@ header {
 }
 
 .card-info {
-    padding: 20px;
+    padding: 22px;
 }
+
 .card-title {
-    margin: 0 0 10px 0;
-    font-size: 1.2rem;
-    color: #333;
-    white-space: nowrap; /* Запрет переноса на новую строку */
-    overflow: hidden; /* Скрыть хвост */
-    text-overflow: ellipsis; /* Добавить троеточие (...) */
+    margin: 0 0 12px 0;
+    font-size: 1.25rem;
+    color: #2c3e50; /* Тёмно-серый для заголовка */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+
 .card-meta {
     font-size: 0.9rem;
-    color: #777;
+    color: #6c757d; /* Серый для метаданных */
     margin-bottom: 15px;
 }
+
 /* Кнопка */
 .btn {
     display: inline-block;
     text-decoration: none;
-    background-color: #007bff;
+    background-color: #4682b4; /* Серо-голубой фон кнопки */
     color: white;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-}
-.btn:hover {
-    background-color: #0056b3;
+    padding: 10px 20px;
+    border-radius: 8px; /* Более скруглённые углы у кнопок */
+    font-size: 0.95rem;
+    transition: background-color 0.3s, transform 0.2s;
+    border: none;
 }
 
+.btn:hover {
+    background-color: #3a6a96; /* Темнее при наведении */
+    transform: translateY(-2px);
+}
 
 /* Панель инструментов */
 .toolbar {
     background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    margin-bottom: 30px;
+    padding: 22px;
+    border-radius: 16px; /* Скруглённые углы */
+    box-shadow: 0 4px 10px rgba(128, 128, 128, 0.08);
+    margin-bottom: 35px;
     display: flex;
-    gap: 15px;
+    gap: 18px;
     align-items: center;
-    flex-wrap: wrap; /* Чтобы на мобильном переносилось */
+    flex-wrap: wrap;
+    border: 1px solid #e9ecef;
 }
+
 .search-input {
-    flex-grow: 1; /* Занимает всё свободное место */
-    padding: 10px 15px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    flex-grow: 1;
+    padding: 12px 18px;
+    border: 1px solid #adb5bd; /* Светло-серая рамка */
+    border-radius: 8px;
     font-size: 1rem;
+    transition: border-color 0.3s;
 }
+
+.search-input:focus {
+    outline: none;
+    border-color: #4682b4; /* Подсвечиваем серо-голубым при фокусе */
+}
+
 .sort-select {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    padding: 12px;
+    border: 1px solid #adb5bd;
+    border-radius: 8px;
     background: white;
     cursor: pointer;
+    transition: border-color 0.3s;
 }
+
+.sort-select:focus {
+    outline: none;
+    border-color: #4682b4;
+}
+
 .search-btn {
-    padding: 10px 25px;
-    background-color: #007bff;
+    padding: 12px 28px;
+    background-color: #4682b4; /* Серо-голубой */
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 1rem;
-}
-.search-btn:hover {
-    background-color: #0056b3;
-}
-.reset-link {
-    color: #dc3545;
-    text-decoration: none;
-    font-size: 0.9rem;
+    transition: background-color 0.3s, transform 0.2s;
 }
 
-
-.pagination {
-    margin-top: 40px;
-    text-align: center;
-    padding: 20px;
-}
-.pagination a {
-    display: inline-block;
-    padding: 8px 16px;
-    margin: 0 5px;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    text-decoration: none;
-    color: #333;
-}
-.pagination a:hover {
-    background: #f0f0f0;
-}
-.pagination .current {
-    font-weight: bold;
-    margin: 0 10px;
-}
-
-.messages-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
-    width: 300px;
-}
-.alert {
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    color: white;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    animation: slideIn 0.5s ease-out;
-}
-.alert.success { background-color: #28a745; } /* Зеленый */
-.alert.error { background-color: #dc3545; } /* Красный */
-.alert.warning { background-color: #ffc107; color: black; } /* Желтый */
-
-@keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}

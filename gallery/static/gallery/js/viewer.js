@@ -6,12 +6,20 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 export function loadModel(containerId, modelUrl) {
     const container = document.getElementById(containerId);
+    
     if (!container) {
         
         console.error("Контейнер не найден:", containerId);
         return;
     }
 
+
+    // Очищаем содержимое контейнера (убирает превью-изображение)
+    container.innerHTML = '';
+
+    // Устанавливаем однотонный фон
+    container.style.backgroundImage = 'none';
+    container.style.backgroundColor = '#f8f9fa'; // светло-серый фон
     // --- СЦЕНА ---
     const scene = new THREE.Scene();
     scene.background = null;
@@ -32,6 +40,10 @@ export function loadModel(containerId, modelUrl) {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
+
+    // Добавить эти две строки:
+    renderer.domElement.style.pointerEvents = 'auto';
+    renderer.domElement.style.zIndex = '9999';
 
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
@@ -138,4 +150,5 @@ function fitCameraToObject(camera, object, offset = 1.25) {
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
 }
+
 
